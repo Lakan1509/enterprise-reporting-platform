@@ -454,17 +454,17 @@ else
 
             salesByRegion =
                 await Http.GetFromJsonAsync<List<RegionOrderSummary>>(
-                    "http://localhost:5149/api/dashboard/sales-by-region")
+                    "api/dashboard/sales-by-region")
                 ?? [];
 
             var jobs =
                 await Http.GetFromJsonAsync<List<IntegrationJobSummary>>(
-                    "http://localhost:5149/api/integration/jobs")
+                    "api/integration/jobs")
                 ?? [];
 
             var errors =
                 await Http.GetFromJsonAsync<List<ValidationErrorSummary>>(
-                    "http://localhost:5149/api/integration/errors")
+                    "api/integration/errors")
                 ?? [];
 
             integrationJobs = jobs.Count;

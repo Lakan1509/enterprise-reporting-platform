@@ -129,7 +129,7 @@ else
         {
             products =
                 await Http.GetFromJsonAsync<List<ProductModel>>(
-                    "http://localhost:5149/api/products") ?? [];
+                    "api/products") ?? [];
         }
         catch (Exception ex)
         {
@@ -149,7 +149,7 @@ else
         try
         {
             var response = await Http.PostAsJsonAsync(
-                "http://localhost:5149/api/products",
+                "api/products",
                 newProduct);
 
             if (response.IsSuccessStatusCode)

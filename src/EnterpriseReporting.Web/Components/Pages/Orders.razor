@@ -151,7 +151,7 @@ else
         {
             orders =
                 await Http.GetFromJsonAsync<List<OrderModel>>(
-                    "http://localhost:5149/api/orders") ?? [];
+                    "api/orders") ?? [];
         }
         catch (Exception ex)
         {
@@ -173,7 +173,7 @@ else
             newOrder.OrderDate = DateTime.UtcNow;
 
             var response = await Http.PostAsJsonAsync(
-                "http://localhost:5149/api/orders",
+                "api/orders",
                 newOrder);
 
             if (response.IsSuccessStatusCode)

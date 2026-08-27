@@ -127,7 +127,7 @@ else
         {
             customers =
                 await Http.GetFromJsonAsync<List<CustomerModel>>(
-                    "http://localhost:5149/api/customers") ?? [];
+                    "api/customers") ?? [];
         }
         catch (Exception ex)
         {
@@ -147,7 +147,7 @@ else
         try
         {
             var response = await Http.PostAsJsonAsync(
-                "http://localhost:5149/api/customers",
+                "api/customers",
                 newCustomer);
 
             if (response.IsSuccessStatusCode)

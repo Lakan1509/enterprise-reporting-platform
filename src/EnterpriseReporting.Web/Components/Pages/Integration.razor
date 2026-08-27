@@ -262,7 +262,7 @@ else
                 selectedFile.Name);
 
             var response = await Http.PostAsync(
-                "http://localhost:5149/api/integration/import-sales-csv",
+                "api/integration/import-sales-csv",
                 content);
 
             if (response.IsSuccessStatusCode)
@@ -311,11 +311,11 @@ else
 
             jobs =
                 await Http.GetFromJsonAsync<List<IntegrationJobModel>>(
-                    "http://localhost:5149/api/integration/jobs") ?? [];
+                    "api/integration/jobs") ?? [];
 
             validationErrors =
                 await Http.GetFromJsonAsync<List<ValidationErrorModel>>(
-                    "http://localhost:5149/api/integration/errors") ?? [];
+                    "api/integration/errors") ?? [];
         }
         catch (Exception ex)
         {

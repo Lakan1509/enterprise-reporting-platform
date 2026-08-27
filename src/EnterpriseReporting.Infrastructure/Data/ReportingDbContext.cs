@@ -5,7 +5,7 @@ namespace EnterpriseReporting.Infrastructure.Data;
 
 public class ReportingDbContext : DbContext
 {
-    public ReportingDbContext(DbContextOptions<ReportingDbContext> options)
+    public ReportingDbContext(DbContextOptions options)
         : base(options)
     {
     }
