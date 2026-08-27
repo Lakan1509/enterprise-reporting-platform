@@ -1,0 +1,197 @@
+@page "/customers"
+@rendermode InteractiveServer
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<PageTitle>Customers</PageTitle>
+
+<h1>Customers</h1>
+
+<p class="lead">
+    Manage and review enterprise customer records.
+</p>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+        <h4>Add Customer</h4>
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Customer Code</label>
+                <input class="form-control"
+                       @bind="newCustomer.CustomerCode" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Name</label>
+                <input class="form-control"
+                       @bind="newCustomer.Name" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Region</label>
+                <input class="form-control"
+                       @bind="newCustomer.Region" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Email</label>
+                <input class="form-control"
+                       @bind="newCustomer.Email" />
+            </div>
+
+        </div>
+
+        <button class="btn btn-primary mt-3"
+                @onclick="CreateCustomer"
+                disabled="@saving">
+            @(saving ? "Saving..." : "Add Customer")
+        </button>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert @messageClass mt-3">
+                @message
+            </div>
+        }
+
+    </div>
+</div>
+
+@if (loading)
+{
+    <p>Loading customers...</p>
+}
+else if (error != null)
+{
+    <div class="alert alert-danger">@error</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <h4>Customer Directory</h4>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer Code</th>
+                        <th>Name</th>
+                        <th>Region</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var customer in customers)
+                    {
+                        <tr>
+                            <td>@customer.Id</td>
+                            <td>@customer.CustomerCode</td>
+                            <td>@customer.Name</td>
+                            <td>@customer.Region</td>
+                            <td>@customer.Email</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+}
+
+@code {
+    private List<CustomerModel> customers = [];
+    private CustomerCreateModel newCustomer = new();
+
+    private bool loading = true;
+    private bool saving;
+
+    private string? error;
+    private string? message;
+
+    private string messageClass = "alert-success";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomers();
+    }
+
+    private async Task LoadCustomers()
+    {
+        try
+        {
+            customers =
+                await Http.GetFromJsonAsync<List<CustomerModel>>(
+                    "http://localhost:5149/api/customers") ?? [];
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task CreateCustomer()
+    {
+        saving = true;
+        message = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync(
+                "http://localhost:5149/api/customers",
+                newCustomer);
+
+            if (response.IsSuccessStatusCode)
+            {
+                messageClass = "alert-success";
+                message = "Customer created successfully.";
+
+                newCustomer = new CustomerCreateModel();
+
+                await LoadCustomers();
+            }
+            else
+            {
+                var body = await response.Content.ReadAsStringAsync();
+
+                messageClass = "alert-danger";
+                message = $"Unable to create customer: {body}";
+            }
+        }
+        catch (Exception ex)
+        {
+            messageClass = "alert-danger";
+            message = $"Unable to create customer: {ex.Message}";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private class CustomerModel
+    {
+        public int Id { get; set; }
+        public string CustomerCode { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Region { get; set; } = "";
+        public string Email { get; set; } = "";
+    }
+
+    private class CustomerCreateModel
+    {
+        public string CustomerCode { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Region { get; set; } = "";
+        public string Email { get; set; } = "";
+    }
+}

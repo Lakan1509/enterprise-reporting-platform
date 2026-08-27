@@ -1,0 +1,227 @@
+@page "/orders"
+@rendermode InteractiveServer
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<PageTitle>Orders</PageTitle>
+
+<h1>Orders</h1>
+
+<p class="lead">
+    Create and review enterprise orders.
+</p>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+        <h4>Create Order</h4>
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Order Number</label>
+                <input class="form-control"
+                       @bind="newOrder.OrderNumber" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Customer ID</label>
+                <input class="form-control"
+                       type="number"
+                       @bind="newOrder.CustomerId" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Total Amount</label>
+                <input class="form-control"
+                       type="number"
+                       step="0.01"
+                       @bind="newOrder.TotalAmount" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select"
+                        @bind="newOrder.Status">
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+
+        </div>
+
+        <button class="btn btn-primary mt-3"
+                @onclick="CreateOrder"
+                disabled="@saving">
+            @(saving ? "Saving..." : "Create Order")
+        </button>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert @messageClass mt-3">
+                @message
+            </div>
+        }
+
+    </div>
+</div>
+
+@if (loading)
+{
+    <p>Loading orders...</p>
+}
+else if (error != null)
+{
+    <div class="alert alert-danger">@error</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <h4>Order History</h4>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Order Number</th>
+                            <th>Customer</th>
+                            <th>Region</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var order in orders)
+                        {
+                            <tr>
+                                <td>@order.Id</td>
+                                <td>@order.OrderNumber</td>
+                                <td>@order.CustomerName</td>
+                                <td>@order.CustomerRegion</td>
+                                <td>@order.OrderDate.ToString("MM/dd/yyyy")</td>
+                                <td>@order.TotalAmount.ToString("C")</td>
+                                <td>
+                                    @if (order.Status == "Completed")
+                                    {
+                                        <span class="badge bg-success">
+                                            @order.Status
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            @order.Status
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    private List<OrderModel> orders = [];
+    private OrderCreateModel newOrder = new();
+
+    private bool loading = true;
+    private bool saving;
+
+    private string? error;
+    private string? message;
+    private string messageClass = "alert-success";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrders();
+    }
+
+    private async Task LoadOrders()
+    {
+        try
+        {
+            orders =
+                await Http.GetFromJsonAsync<List<OrderModel>>(
+                    "http://localhost:5149/api/orders") ?? [];
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task CreateOrder()
+    {
+        saving = true;
+        message = null;
+
+        try
+        {
+            newOrder.OrderDate = DateTime.UtcNow;
+
+            var response = await Http.PostAsJsonAsync(
+                "http://localhost:5149/api/orders",
+                newOrder);
+
+            if (response.IsSuccessStatusCode)
+            {
+                messageClass = "alert-success";
+                message = "Order created successfully.";
+
+                newOrder = new OrderCreateModel();
+
+                await LoadOrders();
+            }
+            else
+            {
+                var body = await response.Content.ReadAsStringAsync();
+
+                messageClass = "alert-danger";
+                message = $"Unable to create order: {body}";
+            }
+        }
+        catch (Exception ex)
+        {
+            messageClass = "alert-danger";
+            message = $"Unable to create order: {ex.Message}";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private class OrderModel
+    {
+        public int Id { get; set; }
+        public string OrderNumber { get; set; } = "";
+        public int CustomerId { get; set; }
+        public string CustomerName { get; set; } = "";
+        public string CustomerRegion { get; set; } = "";
+        public DateTime OrderDate { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string Status { get; set; } = "";
+    }
+
+    private class OrderCreateModel
+    {
+        public string OrderNumber { get; set; } = "";
+        public int CustomerId { get; set; }
+        public DateTime OrderDate { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string Status { get; set; } = "Pending";
+    }
+}

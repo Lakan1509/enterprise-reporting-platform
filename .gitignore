@@ -1,0 +1,32 @@
+# .NET
+bin/
+obj/
+**/bin/
+**/obj/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Local databases
+*.db
+*.db-shm
+*.db-wal
+
+# Local CSV test data
+sample-sales*.csv
+
+# Secrets
+appsettings.Local.json
+.env
+.env.*
+
+# Build artifacts
+publish/
+TestResults/
+
+# User-specific files
+*.user
+*.suo

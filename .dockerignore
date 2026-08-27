@@ -1,0 +1,8 @@
+**/bin
+**/obj
+.git
+.vscode
+*.db
+*.db-shm
+*.db-wal
+sample-sales*.csv

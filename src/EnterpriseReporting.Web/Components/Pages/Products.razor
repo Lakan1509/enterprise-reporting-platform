@@ -1,0 +1,199 @@
+@page "/products"
+@rendermode InteractiveServer
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<PageTitle>Products</PageTitle>
+
+<h1>Products</h1>
+
+<p class="lead">
+    Manage the enterprise product catalog.
+</p>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+        <h4>Add Product</h4>
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Product Code</label>
+                <input class="form-control"
+                       @bind="newProduct.ProductCode" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Name</label>
+                <input class="form-control"
+                       @bind="newProduct.Name" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Category</label>
+                <input class="form-control"
+                       @bind="newProduct.Category" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Unit Price</label>
+                <input class="form-control"
+                       type="number"
+                       step="0.01"
+                       @bind="newProduct.UnitPrice" />
+            </div>
+
+        </div>
+
+        <button class="btn btn-primary mt-3"
+                @onclick="CreateProduct"
+                disabled="@saving">
+            @(saving ? "Saving..." : "Add Product")
+        </button>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert @messageClass mt-3">
+                @message
+            </div>
+        }
+
+    </div>
+</div>
+
+@if (loading)
+{
+    <p>Loading products...</p>
+}
+else if (error != null)
+{
+    <div class="alert alert-danger">@error</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <h4>Product Catalog</h4>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product Code</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Unit Price</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var product in products)
+                    {
+                        <tr>
+                            <td>@product.Id</td>
+                            <td>@product.ProductCode</td>
+                            <td>@product.Name</td>
+                            <td>@product.Category</td>
+                            <td>@product.UnitPrice.ToString("C")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+}
+
+@code {
+    private List<ProductModel> products = [];
+    private ProductCreateModel newProduct = new();
+
+    private bool loading = true;
+    private bool saving;
+
+    private string? error;
+    private string? message;
+
+    private string messageClass = "alert-success";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        try
+        {
+            products =
+                await Http.GetFromJsonAsync<List<ProductModel>>(
+                    "http://localhost:5149/api/products") ?? [];
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task CreateProduct()
+    {
+        saving = true;
+        message = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync(
+                "http://localhost:5149/api/products",
+                newProduct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                messageClass = "alert-success";
+                message = "Product created successfully.";
+
+                newProduct = new ProductCreateModel();
+
+                await LoadProducts();
+            }
+            else
+            {
+                var body = await response.Content.ReadAsStringAsync();
+
+                messageClass = "alert-danger";
+                message = $"Unable to create product: {body}";
+            }
+        }
+        catch (Exception ex)
+        {
+            messageClass = "alert-danger";
+            message = $"Unable to create product: {ex.Message}";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private class ProductModel
+    {
+        public int Id { get; set; }
+        public string ProductCode { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Category { get; set; } = "";
+        public decimal UnitPrice { get; set; }
+    }
+
+    private class ProductCreateModel
+    {
+        public string ProductCode { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Category { get; set; } = "";
+        public decimal UnitPrice { get; set; }
+    }
+}
