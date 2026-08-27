@@ -43,9 +43,12 @@ public class IntegrationController : ControllerBase
         if (header == null)
             return BadRequest("CSV file is empty.");
 
-        while (!reader.EndOfStream)
+        while (true)
         {
             var line = await reader.ReadLineAsync();
+
+            if (line is null)
+                break;
 
             if (string.IsNullOrWhiteSpace(line))
                 continue;
