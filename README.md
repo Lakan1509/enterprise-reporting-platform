@@ -111,7 +111,7 @@ GitHub Actions validates every push to `main` through dependency restore, Releas
 
 The live dashboard provides visibility into revenue, customers, products, orders, regional sales performance, and imported sales data backed by Azure SQL.
 
-![Enterprise Reporting Dashboard](docs/images/Enterprise Reporting Dashboard.png)
+![Enterprise Reporting Dashboard](docs/images/dashboard.png)
 
 ### Data Integration & Validation
 
