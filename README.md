@@ -1,5 +1,7 @@
 # Enterprise Reporting Platform
 
+[![Enterprise Reporting CI](https://github.com/Lakan1509/enterprise-reporting-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/Lakan1509/enterprise-reporting-platform/actions/workflows/ci.yml)
+
 A production-style enterprise reporting, analytics, and data integration platform built with .NET 10, ASP.NET Core, Blazor, Entity Framework Core, REST APIs, and Docker.
 
 ## Overview
