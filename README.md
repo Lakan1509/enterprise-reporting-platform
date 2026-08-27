@@ -49,3 +49,54 @@ The system provides REST APIs, a Blazor web dashboard, database persistence, CSV
                              v
                     Reporting Database
                  SQLite Local Development
+
+```
+
+## Live Azure Deployment
+
+The Enterprise Reporting Platform is deployed on Microsoft Azure using a production-style cloud architecture.
+
+### Live Applications
+
+**Web Dashboard**  
+https://enterprise-reporting-web.salmonriver-ada8725b.centralus.azurecontainerapps.io
+
+**REST API**  
+https://enterprise-reporting-api.salmonriver-ada8725b.centralus.azurecontainerapps.io
+
+### Cloud Architecture
+
+```text
+Internet
+   |
+   v
+Azure Container Apps
+   |
+   +------------------------+
+   |                        |
+   v                        v
+Blazor Web             ASP.NET Core API
+                            |
+                            v
+                     Azure SQL Database
+```
+
+### Azure Services
+
+- Azure Container Apps
+- Azure Container Registry
+- Azure SQL Database
+- Azure Managed Identity
+- Azure Log Analytics
+- Azure Resource Groups
+- Entity Framework Core SQL Server migrations
+
+### Deployment
+
+The API and Blazor frontend are containerized with Docker and published to Azure Container Registry. Azure Container Apps pulls the images using a user-assigned managed identity with the `AcrPull` role.
+
+The application supports SQLite for local development and Azure SQL for cloud deployment.
+
+### CI/CD
+
+GitHub Actions validates every push to `main` through dependency restore, Release build, automated unit and integration tests, and NuGet vulnerability scanning.
