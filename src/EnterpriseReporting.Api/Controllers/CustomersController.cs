@@ -41,19 +41,28 @@ public class CustomersController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Customer>> CreateCustomer(Customer customer)
+    public async Task<ActionResult<Customer>> CreateCustomer(
+        EnterpriseReporting.Api.Contracts.CreateCustomerRequest request)
     {
-        if (string.IsNullOrWhiteSpace(customer.CustomerCode))
+        if (string.IsNullOrWhiteSpace(request.CustomerCode))
             return BadRequest("CustomerCode is required.");
 
-        if (string.IsNullOrWhiteSpace(customer.Name))
+        if (string.IsNullOrWhiteSpace(request.Name))
             return BadRequest("Name is required.");
 
         var exists = await _context.Customers
-            .AnyAsync(x => x.CustomerCode == customer.CustomerCode);
+            .AnyAsync(x => x.CustomerCode == request.CustomerCode);
 
         if (exists)
-            return Conflict($"Customer code '{customer.CustomerCode}' already exists.");
+            return Conflict($"Customer code '{request.CustomerCode}' already exists.");
+
+        var customer = new Customer
+        {
+            CustomerCode = request.CustomerCode,
+            Name = request.Name,
+            Region = request.Region,
+            Email = request.Email
+        };
 
         _context.Customers.Add(customer);
         await _context.SaveChangesAsync();

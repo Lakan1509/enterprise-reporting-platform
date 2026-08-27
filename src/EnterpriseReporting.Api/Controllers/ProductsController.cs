@@ -39,22 +39,31 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Product>> CreateProduct(Product product)
+    public async Task<ActionResult<Product>> CreateProduct(
+        EnterpriseReporting.Api.Contracts.CreateProductRequest request)
     {
-        if (string.IsNullOrWhiteSpace(product.ProductCode))
+        if (string.IsNullOrWhiteSpace(request.ProductCode))
             return BadRequest("ProductCode is required.");
 
-        if (string.IsNullOrWhiteSpace(product.Name))
+        if (string.IsNullOrWhiteSpace(request.Name))
             return BadRequest("Name is required.");
 
-        if (product.UnitPrice < 0)
+        if (request.UnitPrice < 0)
             return BadRequest("UnitPrice cannot be negative.");
 
         var exists = await _context.Products
-            .AnyAsync(x => x.ProductCode == product.ProductCode);
+            .AnyAsync(x => x.ProductCode == request.ProductCode);
 
         if (exists)
-            return Conflict($"Product code '{product.ProductCode}' already exists.");
+            return Conflict($"Product code '{request.ProductCode}' already exists.");
+
+        var product = new Product
+        {
+            ProductCode = request.ProductCode,
+            Name = request.Name,
+            Category = request.Category,
+            UnitPrice = request.UnitPrice
+        };
 
         _context.Products.Add(product);
         await _context.SaveChangesAsync();

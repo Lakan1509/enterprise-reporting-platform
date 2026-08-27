@@ -73,35 +73,39 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateOrder(Order order)
+    public async Task<IActionResult> CreateOrder(
+        EnterpriseReporting.Api.Contracts.CreateOrderRequest request)
     {
-        if (string.IsNullOrWhiteSpace(order.OrderNumber))
+        if (string.IsNullOrWhiteSpace(request.OrderNumber))
             return BadRequest("OrderNumber is required.");
 
-        if (order.TotalAmount <= 0)
+        if (request.TotalAmount <= 0)
             return BadRequest("TotalAmount must be greater than zero.");
 
         var customerExists = await _context.Customers
-            .AnyAsync(x => x.Id == order.CustomerId);
+            .AnyAsync(x => x.Id == request.CustomerId);
 
         if (!customerExists)
             return BadRequest(
-                $"Customer {order.CustomerId} does not exist.");
+                $"Customer {request.CustomerId} does not exist.");
 
         var orderExists = await _context.Orders
-            .AnyAsync(x => x.OrderNumber == order.OrderNumber);
+            .AnyAsync(x => x.OrderNumber == request.OrderNumber);
 
         if (orderExists)
             return Conflict(
-                $"Order number '{order.OrderNumber}' already exists.");
+                $"Order number '{request.OrderNumber}' already exists.");
 
-        if (order.OrderDate == default)
-            order.OrderDate = DateTime.UtcNow;
-
-        if (string.IsNullOrWhiteSpace(order.Status))
-            order.Status = "Pending";
-
-        order.Customer = null;
+        var order = new Order
+        {
+            OrderNumber = request.OrderNumber,
+            CustomerId = request.CustomerId,
+            OrderDate = request.OrderDate ?? DateTime.UtcNow,
+            TotalAmount = request.TotalAmount,
+            Status = string.IsNullOrWhiteSpace(request.Status)
+                ? "Pending"
+                : request.Status
+        };
 
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
