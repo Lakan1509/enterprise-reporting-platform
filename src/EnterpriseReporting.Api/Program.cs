@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 builder.Services.AddControllers();
 
 builder.Services.AddCors(options =>
@@ -35,10 +38,18 @@ builder.Services.AddDbContext<ReportingDbContext>(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+app.MapOpenApi();
+
+app.UseSwagger();
+
+app.UseSwaggerUI(options =>
 {
-    app.MapOpenApi();
-}
+    options.SwaggerEndpoint(
+        "/swagger/v1/swagger.json",
+        "Enterprise Reporting API v1");
+
+    options.RoutePrefix = "swagger";
+});
 
 if (app.Environment.IsDevelopment())
 {
