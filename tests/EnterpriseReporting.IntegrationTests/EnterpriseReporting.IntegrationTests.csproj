@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\EnterpriseReporting.Domain\EnterpriseReporting.Domain.csproj" />
     <ProjectReference Include="..\..\src\EnterpriseReporting.Infrastructure\EnterpriseReporting.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\EnterpriseReporting.Api\EnterpriseReporting.Api.csproj" />
   </ItemGroup>
 
 </Project>
